@@ -5,14 +5,7 @@ from selenium.common.exceptions import NoSuchElementException
 from dotenv import load_dotenv, find_dotenv
 import os
 
-dotenv_path = find_dotenv()
-if not dotenv_path:
-    raise FileNotFoundError("Arquivo .env não encontrado")
-load_dotenv(dotenv_path)
-
-INSTAGRAM_BACKUP_CODES = os.getenv("INSTAGRAM_BACKUP_CODES").strip("[]").replace("\"", "").split(",")
-
-def login(driver, username, password):
+def login(driver, username, password, backup_codes):
     try:
         print("Acessando a página de login do Instagram...")
         driver.get("https://www.instagram.com/accounts/login/")
@@ -49,8 +42,8 @@ def login(driver, username, password):
                     button.click()
                     break
 
-            if INSTAGRAM_BACKUP_CODES:
-                backup_code = INSTAGRAM_BACKUP_CODES.pop(0)
+            if backup_codes:
+                backup_code = backup_codes.pop(0)
                 backup_code_field = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.NAME, "verificationCode"))
                 )
@@ -61,7 +54,7 @@ def login(driver, username, password):
                 )
                 confirm_button.click()
 
-                update_env_file(INSTAGRAM_BACKUP_CODES)
+                update_env_file(backup_codes)
 
             print("Login realizado com sucesso usando código de reserva!")
             return True
@@ -75,6 +68,7 @@ def login(driver, username, password):
         return False
 
 def update_env_file(codes):
+    dotenv_path = find_dotenv()
     with open(dotenv_path, 'r') as file:
         data = file.readlines()
 
