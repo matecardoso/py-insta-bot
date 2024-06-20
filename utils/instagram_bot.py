@@ -18,6 +18,7 @@ class InstagramBot:
         options = webdriver.ChromeOptions()
         options.add_argument("--disable-notifications")
         options.add_argument("--start-maximized")
+        options.add_argument("--headless")
         options.add_argument(f"--user-data-dir={session_path}")
         
         service = ChromeService(executable_path=ChromeDriverManager().install())
@@ -54,17 +55,29 @@ class InstagramBot:
         }
         return headers
     
-    def get_followers(self, user_id, count=12):
+    def get_followers(self, user_id):
         cookies = self.get_cookies()
         headers = self.get_headers()
+        followers = []
+        max_id = ''
         
-        url = f'https://www.instagram.com/api/v1/friendships/{user_id}/followers/?count={count}&search_surface=follow_list_page'
-        response = requests.get(url, headers=headers, cookies=cookies)
+        while True:
+            url = f'https://www.instagram.com/api/v1/friendships/{user_id}/followers/?count=100&search_surface=follow_list_page&max_id={max_id}'
+            response = requests.get(url, headers=headers, cookies=cookies)
+            
+            if response.status_code != 200:
+                print(f"Falha ao obter seguidores: {response.status_code}")
+                print(response.text)
+                return None
+            
+            data = response.json()
+            followers.extend(data['users'])
+            if 'next_max_id' in data and data['next_max_id']:
+                max_id = data['next_max_id']
+            else:
+                break
         
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return None
+        return followers
     
     def close(self):
         self.driver.quit()
@@ -75,18 +88,3 @@ class InstagramBot:
     def save_page_source(self, filename="page_source.html"):
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(self.driver.page_source)
-
-if __name__ == "__main__":
-    bot = InstagramBot()
-    try:
-        bot.login()
-        user_id = '1234302260'
-        followers = bot.get_followers(user_id)
-        if followers:
-            print("Seguidores:")
-            print(followers)
-        bot.page_screenshot()
-    except Exception as e:
-        print(f"Ocorreu um erro: {e}")
-    finally:
-        bot.close()

@@ -1,3 +1,6 @@
 .env
-pycache
 browser_data/selenium_session
+*/__pycache__
+*.pyc
+*.pyo
+*.pyd
