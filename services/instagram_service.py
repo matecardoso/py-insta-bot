@@ -15,6 +15,9 @@ class InstagramService:
     def get_followers(self, user_id):
         return self.bot.get_followers(user_id)
     
+    def get_following(self, user_id):
+        return self.bot.get_following(user_id)
+    
     def screenshot(self, filename="screenshot.png"):
         self.bot.page_screenshot(filename)
     

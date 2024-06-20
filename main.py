@@ -13,6 +13,13 @@ def main():
             print(f"Total de seguidores: {len(followers)}")
             # print("Seguidores:")
             # print(followers)
+        
+        following = service.get_following(user_id)
+        if following is not None:
+            print(f"Total de quem você segue: {len(following)}")
+            # print("Quem você segue:")
+            # print(following)
+        
         service.screenshot()
     except Exception as e:
         print(f"Ocorreu um erro: {e}")

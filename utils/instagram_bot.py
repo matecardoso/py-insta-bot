@@ -79,6 +79,30 @@ class InstagramBot:
         
         return followers
     
+    def get_following(self, user_id):
+        cookies = self.get_cookies()
+        headers = self.get_headers()
+        following = []
+        max_id = ''
+        
+        while True:
+            url = f'https://www.instagram.com/api/v1/friendships/{user_id}/following/?count=100&search_surface=follow_list_page&max_id={max_id}'
+            response = requests.get(url, headers=headers, cookies=cookies)
+            
+            if response.status_code != 200:
+                print(f"Falha ao obter quem você segue: {response.status_code}")
+                print(response.text)
+                return None
+            
+            data = response.json()
+            following.extend(data['users'])
+            if 'next_max_id' in data and data['next_max_id']:
+                max_id = data['next_max_id']
+            else:
+                break
+        
+        return following
+    
     def close(self):
         self.driver.quit()
     
